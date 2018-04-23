@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.yuong.pulltorefresh.library.RefreshLayout;
-import com.yuong.pulltorefresh.library.RefreshListener;
+import com.yuong.pulltorefresh.library.listener.RefreshListener;
 
 public class MainActivity extends AppCompatActivity {
     private RefreshLayout refreshLayout;
