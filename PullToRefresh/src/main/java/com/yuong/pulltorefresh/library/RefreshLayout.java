@@ -61,61 +61,13 @@ public class RefreshLayout extends ViewGroup {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 //        Log.e(TAG, "onMeasure()...");
-        //测量子view的尺寸
-//        measureChildren(widthMeasureSpec, heightMeasureSpec);
-//        int with = MeasureSpec.getSize(widthMeasureSpec);
-//        int height = MeasureSpec.getSize(heightMeasureSpec);
-//        int withMode = MeasureSpec.getMode(widthMeasureSpec);
-//        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-//        if (getChildCount() == 0) {//如果没有子View,当前ViewGroup没有存在的意义，不用占用空间
-//            setMeasuredDimension(0, 0);
-//            return;
-//        }
-//
-//        if (withMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.AT_MOST) {
-//            //高度累加，宽度取最大
-//            setMeasuredDimension(getMaxChildWidth(), getTotleHeight());
-//        } else if (heightMode == MeasureSpec.AT_MOST) {
-//            setMeasuredDimension(with, getTotleHeight());
-//        } else if (withMode == MeasureSpec.AT_MOST) {
-//            setMeasuredDimension(getMaxChildWidth(), height);
-//        }
-
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             measureChild(child, widthMeasureSpec, heightMeasureSpec);
         }
     }
 
-//    /***
-//     * 获取子View中宽度最大的值
-//     */
-//    private int getMaxChildWidth() {
-//        int childCount = getChildCount();
-//        int maxWidth = 0;
-//        for (int i = 0; i < childCount; i++) {
-//            View childView = getChildAt(i);
-//            if (childView.getMeasuredWidth() > maxWidth) {
-//                maxWidth = childView.getMeasuredWidth();
-//            }
-//        }
-//        return maxWidth;
-//    }
 
-//    /***
-//     * 将所有子View的高度相加
-//     **/
-//    private int getTotleHeight() {
-//        int childCount = getChildCount();
-//        int height = 0;
-//        for (int i = 0; i < childCount; i++) {
-//
-//            View childView = getChildAt(i);
-//            if (childView == headerView) continue;
-//            height += childView.getMeasuredHeight();
-//        }
-//        return height;
-//    }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {

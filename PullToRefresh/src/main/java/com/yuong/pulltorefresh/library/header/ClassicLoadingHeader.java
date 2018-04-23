@@ -53,21 +53,18 @@ public class ClassicLoadingHeader extends LoadingLayout {
         if (lastState != currentState) {
             switch (status) {
                 case STATUS_PULL_TO_REFRESH:
-//                currentState = State.STATUS_PULL_TO_REFRESH;
                     arrow.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.GONE);
                     rotateArrow();
                     description.setText(getContext().getResources().getString(R.string.pull_to_refresh));
                     break;
                 case STATUS_RELEASE_TO_REFRESH:
-//                currentState = State.STATUS_RELEASE_TO_REFRESH;
                     arrow.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.GONE);
                     rotateArrow();
                     description.setText(getContext().getResources().getString(R.string.release_to_refresh));
                     break;
                 case STATUS_REFRESHING:
-//                currentState = State.STATUS_REFRESHING;
                     Log.e("","");
                     arrow.clearAnimation();
                     arrow.setVisibility(View.GONE);
@@ -75,7 +72,6 @@ public class ClassicLoadingHeader extends LoadingLayout {
                     description.setText(getContext().getResources().getString(R.string.refreshing));
                     break;
                 case STATUS_REFRESH_FINISHED:
-//                currentState = State.STATUS_REFRESH_FINISHED;
                     arrow.setVisibility(View.GONE);
                     progressBar.setVisibility(View.GONE);
                     description.setText(getContext().getResources().getString(R.string.refresh_finished));

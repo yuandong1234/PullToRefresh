@@ -10,14 +10,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="文本1" />
-
-
-
+       <com.yuong.view.MyView
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content">
+           <Button
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text=" Button 1"/>
+           <Button
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text=" Button 1"/>
+           <Button
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text=" Button 1"/>
+       </com.yuong.view.MyView>
     </com.yuong.pulltorefresh.library.RefreshLayout>
 
 </RelativeLayout>
