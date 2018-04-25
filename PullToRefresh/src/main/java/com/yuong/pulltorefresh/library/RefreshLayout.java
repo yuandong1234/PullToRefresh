@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Scroller;
 
 import com.yuong.pulltorefresh.library.header.ClassicLoadingHeader;
@@ -68,14 +69,13 @@ public class RefreshLayout extends ViewGroup {
     }
 
 
-
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
 //        Log.e(TAG, "onLayout()...");
         int height = 0;
         int count = getChildCount();
         View child;
-        Log.e(TAG, "ChildCount : "+ count);
+        Log.e(TAG, "ChildCount : " + count);
         for (int i = 0; i < count; i++) {
             child = getChildAt(i);
             if (child == header) {
@@ -99,6 +99,52 @@ public class RefreshLayout extends ViewGroup {
     }
 
     private int mLastMoveY;
+    private int mLastYIntercept;
+
+    //在这里针对不同的类型进行拦截操作
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        boolean intercept = false;
+        int y = (int) event.getY();
+        Log.e(TAG,"onInterceptTouchEvent :y -------> "+y);
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                // 记录下本次系列触摸事件的起始点Y坐标
+                // mLastYMoved = y;
+                // 不拦截ACTION_DOWN，因为当ACTION_DOWN被拦截，后续所有触摸事件都会被拦截
+                 mLastYIntercept = y;
+                intercept = false;
+                break;
+            case MotionEvent.ACTION_MOVE:
+
+                if (y > mLastYIntercept) { // 下滑操作
+                    // 获取最顶部的子视图
+                    View child = getChildAt(0);
+                    if (child instanceof AdapterView) {
+                        intercept = avPullDownIntercept(child);
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                intercept = false;
+                mLastYIntercept = 0;
+            break;
+        }
+        mLastYIntercept = y;
+        return intercept;
+    }
+
+    private boolean avPullDownIntercept(View child) {
+        boolean intercept = true;
+        AdapterView adapterChild = (AdapterView) child;
+        // 判断AbsListView是否已经到达内容最顶部
+        if (adapterChild.getFirstVisiblePosition() != 0
+                || adapterChild.getChildAt(0).getTop() != 0) {
+            // 如果没有达到最顶端，则仍然将事件下放
+            intercept = false;
+        }
+        return intercept;
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {

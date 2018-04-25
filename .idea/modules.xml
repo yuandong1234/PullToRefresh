@@ -7,7 +7,6 @@
       <module fileurl="file://$PROJECT_DIR$/PullToRefresh/PullToRefresh-PullToRefresh.iml" filepath="$PROJECT_DIR$/PullToRefresh/PullToRefresh-PullToRefresh.iml" />
       <module fileurl="file://D:\yuandong\git\PullToRefresh\RefreshLayout.iml" filepath="D:\yuandong\git\PullToRefresh\RefreshLayout.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://D:\yuandong\git\PullToRefresh\app\app.iml" filepath="D:\yuandong\git\PullToRefresh\app\app.iml" />
     </modules>
   </component>
 </project>
