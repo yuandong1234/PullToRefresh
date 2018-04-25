@@ -1,6 +1,7 @@
 package com.yuong.pulltorefresh.library;
 
 import android.content.Context;
+import android.support.v7.view.menu.ShowableListMenu;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -105,19 +106,19 @@ public class RefreshLayout extends ViewGroup {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         boolean intercept = false;
-        int y = (int) event.getY();
-        Log.e(TAG,"onInterceptTouchEvent :y -------> "+y);
+        int currentX = (int) event.getY();
+        Log.e(TAG,"onInterceptTouchEvent :currentX -------> "+currentX);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 // 记录下本次系列触摸事件的起始点Y坐标
                 // mLastYMoved = y;
                 // 不拦截ACTION_DOWN，因为当ACTION_DOWN被拦截，后续所有触摸事件都会被拦截
-                 mLastYIntercept = y;
+                 mLastYIntercept = currentX;
                 intercept = false;
                 break;
             case MotionEvent.ACTION_MOVE:
-
-                if (y > mLastYIntercept) { // 下滑操作
+                Log.e(TAG,"mLastYIntercept "+mLastYIntercept +" currentX :"+currentX);
+                if (currentX >= mLastYIntercept) { // 下滑操作
                     // 获取最顶部的子视图
                     View child = getChildAt(0);
                     if (child instanceof AdapterView) {
@@ -127,10 +128,9 @@ public class RefreshLayout extends ViewGroup {
                 break;
             case MotionEvent.ACTION_UP:
                 intercept = false;
-                mLastYIntercept = 0;
             break;
         }
-        mLastYIntercept = y;
+        mLastYIntercept = currentX;
         return intercept;
     }
 
