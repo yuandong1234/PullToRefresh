@@ -1,7 +1,7 @@
 package com.yuong.pulltorefresh.library;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.support.v7.view.menu.ShowableListMenu;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -34,6 +34,7 @@ public class RefreshLayout extends ViewGroup {
     private RefreshListener refreshListener;
 
     private Scroller mScroller;
+    private boolean loadOnce;
 
     public RefreshLayout(Context context) {
         this(context, null);
@@ -62,7 +63,7 @@ public class RefreshLayout extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-//        Log.e(TAG, "onMeasure()...");
+        Log.e(TAG, "onMeasure()...");
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             measureChild(child, widthMeasureSpec, heightMeasureSpec);
@@ -72,22 +73,26 @@ public class RefreshLayout extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-//        Log.e(TAG, "onLayout()...");
-        int height = 0;
-        int count = getChildCount();
-        View child;
-        Log.e(TAG, "ChildCount : " + count);
-        for (int i = 0; i < count; i++) {
-            child = getChildAt(i);
-            if (child == header) {
-                hideHeaderHeight = child.getMeasuredHeight();
-                Log.e(TAG, "hideHeaderHeight : " + hideHeaderHeight);
-                child.layout(0, -hideHeaderHeight, child.getMeasuredWidth(), 0);
-            } else {
-                child.layout(0, height, child.getMeasuredWidth(), height + child.getMeasuredHeight());
-                height += child.getMeasuredHeight();
+        Log.e(TAG, "onLayout()...");
+        if (changed && !loadOnce) {
+            int height = 0;
+            int count = getChildCount();
+            View child;
+            Log.e(TAG, "ChildCount : " + count);
+            for (int i = 0; i < count; i++) {
+                child = getChildAt(i);
+                if (child == header) {
+                    hideHeaderHeight = child.getMeasuredHeight();
+                    Log.e(TAG, "hideHeaderHeight : " + hideHeaderHeight);
+                    child.layout(0, -hideHeaderHeight, child.getMeasuredWidth(), 0);
+                } else {
+                    child.layout(0, height, child.getMeasuredWidth(), height + child.getMeasuredHeight());
+                    height += child.getMeasuredHeight();
+                }
             }
+            loadOnce = true;
         }
+
     }
 
     @Override
@@ -106,19 +111,20 @@ public class RefreshLayout extends ViewGroup {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         boolean intercept = false;
-        int currentX = (int) event.getY();
-        Log.e(TAG,"onInterceptTouchEvent :currentX -------> "+currentX);
+        int currentY = (int) event.getY();
+        Log.e(TAG, "onInterceptTouchEvent :currentX -------> " + currentY);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 // 记录下本次系列触摸事件的起始点Y坐标
-                // mLastYMoved = y;
+                mLastMoveY = currentY;
+
+                mLastYIntercept = currentY;
                 // 不拦截ACTION_DOWN，因为当ACTION_DOWN被拦截，后续所有触摸事件都会被拦截
-                 mLastYIntercept = currentX;
                 intercept = false;
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.e(TAG,"mLastYIntercept "+mLastYIntercept +" currentX :"+currentX);
-                if (currentX >= mLastYIntercept) { // 下滑操作
+                Log.e(TAG, "mLastYIntercept " + mLastYIntercept + " currentX :" + currentY);
+                if (currentY > mLastYIntercept) { // 下滑操作
                     // 获取最顶部的子视图
                     View child = getChildAt(0);
                     if (child instanceof AdapterView) {
@@ -128,9 +134,9 @@ public class RefreshLayout extends ViewGroup {
                 break;
             case MotionEvent.ACTION_UP:
                 intercept = false;
-            break;
+                break;
         }
-        mLastYIntercept = currentX;
+        mLastYIntercept = currentY;
         return intercept;
     }
 
@@ -146,6 +152,7 @@ public class RefreshLayout extends ViewGroup {
         return intercept;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int y = (int) event.getY();
