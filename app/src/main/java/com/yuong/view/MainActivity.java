@@ -1,23 +1,16 @@
 package com.yuong.view;
 
-import android.os.Handler;
-import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.Button;
 
-import com.yuong.pulltorefresh.library.RefreshLayout;
-import com.yuong.pulltorefresh.library.listener.RefreshListener;
-
-public class MainActivity extends AppCompatActivity {
-    private RefreshLayout refreshLayout;
-    private ListView listView;
-    private ArrayAdapter<String> adapter;
-    private String[] items = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private Button btListView;
+    private Button btScrollView;
+    private Button btRecyclerView;
+    private Button btView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,28 +20,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        refreshLayout = findViewById(R.id.refreshLayout);
+        btListView = findViewById(R.id.bt_listView);
+        btScrollView = findViewById(R.id.bt_scrollView);
+        btRecyclerView = findViewById(R.id.bt_recyclerView);
+        btView = findViewById(R.id.bt_View);
+        btListView.setOnClickListener(this);
+        btScrollView.setOnClickListener(this);
+        btRecyclerView.setOnClickListener(this);
+        btView.setOnClickListener(this);
+    }
 
-        listView = (ListView) findViewById(R.id.listView);
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items);
-        listView.setAdapter(adapter);
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id. bt_listView:
+                startActivity(new Intent(this,ListViewRefreshActivity.class));
+                break;
+            case R.id. bt_scrollView:
+                startActivity(new Intent(this,ScrollViewActivity.class));
+                break;
+            case R.id. bt_recyclerView:
+                startActivity(new Intent(this,RecyclerViewActivity.class));
+                break;
+            case R.id. bt_View:
+                startActivity(new Intent(this,NormalActivity.class));
+                break;
 
-        refreshLayout.setOnRefreshListener(new RefreshListener() {
-            @Override
-            public void onRefresh() {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        refreshLayout.onRefreshComplete();
-                    }
-                }, 3000);
-            }
-        });
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.e("MainActivity","************************");
-            }
-        });
+        }
     }
 }

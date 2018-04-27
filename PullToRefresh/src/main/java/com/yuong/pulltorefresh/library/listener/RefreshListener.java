@@ -6,4 +6,5 @@ package com.yuong.pulltorefresh.library.listener;
 
 public interface RefreshListener {
     void onRefresh();
+    void onLoadMore();
 }

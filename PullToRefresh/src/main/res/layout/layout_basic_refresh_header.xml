@@ -4,7 +4,7 @@
     android:layout_height="60dip"
     android:gravity="center">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="@dimen/header_footer_top_bottom_padding"
@@ -13,9 +13,10 @@
         android:paddingTop="@dimen/header_footer_top_bottom_padding">
 
         <FrameLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="60dip"
             android:layout_gravity="center_vertical"
+            android:layout_toLeftOf="@+id/ll_desc"
             android:gravity="center">
 
             <ImageView
@@ -25,20 +26,20 @@
                 android:layout_gravity="center"
                 android:src="@drawable/arrow" />
 
-            <ProgressBar
+            <com.yuong.pulltorefresh.library.internal.RotateImageView
                 android:id="@+id/progress_bar"
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="30dip"
-                android:layout_height="30dip"
+                android:layout_width="22dip"
+                android:layout_height="22dip"
                 android:layout_gravity="center"
-                android:visibility="gone" />
+                android:visibility="invisible" />
         </FrameLayout>
 
         <LinearLayout
+            android:id="@+id/ll_desc"
             android:layout_width="wrap_content"
             android:layout_height="60dp"
+            android:layout_centerInParent="true"
             android:layout_gravity="center"
-            android:gravity="center_horizontal"
             android:orientation="vertical">
 
             <TextView
@@ -47,8 +48,9 @@
                 android:layout_height="0dip"
                 android:layout_weight="1"
                 android:gravity="center"
+                android:textSize="16sp"
                 android:text="@string/pull_to_refresh" />
         </LinearLayout>
-    </FrameLayout>
+    </RelativeLayout>
 
 </RelativeLayout>

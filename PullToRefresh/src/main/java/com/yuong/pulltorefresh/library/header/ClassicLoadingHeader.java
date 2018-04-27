@@ -1,16 +1,15 @@
 package com.yuong.pulltorefresh.library.header;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.yuong.pulltorefresh.library.R;
 import com.yuong.pulltorefresh.library.State;
+import com.yuong.pulltorefresh.library.internal.RotateImageView;
 
 /**
  * 经典下拉头部
@@ -22,7 +21,7 @@ public class ClassicLoadingHeader extends LoadingLayout {
     private View headerView;
     private ImageView arrow;
     private TextView description;
-    private ProgressBar progressBar;
+    private RotateImageView progressBar;
 
     private State currentState = State.STATUS_REFRESH_FINISHED;
 
@@ -43,7 +42,7 @@ public class ClassicLoadingHeader extends LoadingLayout {
         headerView = LayoutInflater.from(context).inflate(R.layout.layout_basic_refresh_header, null);
         arrow = (ImageView) headerView.findViewById(R.id.arrow);
         description = (TextView) headerView.findViewById(R.id.description);
-        progressBar = (ProgressBar) headerView.findViewById(R.id.progress_bar);
+        progressBar = (RotateImageView) headerView.findViewById(R.id.progress_bar);
         addView(headerView);
     }
 
@@ -54,26 +53,25 @@ public class ClassicLoadingHeader extends LoadingLayout {
             switch (status) {
                 case STATUS_PULL_TO_REFRESH:
                     arrow.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.INVISIBLE);
                     rotateArrow();
                     description.setText(getContext().getResources().getString(R.string.pull_to_refresh));
                     break;
                 case STATUS_RELEASE_TO_REFRESH:
                     arrow.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.INVISIBLE);
                     rotateArrow();
                     description.setText(getContext().getResources().getString(R.string.release_to_refresh));
                     break;
                 case STATUS_REFRESHING:
-                    Log.e("","");
                     arrow.clearAnimation();
                     arrow.setVisibility(View.GONE);
                     progressBar.setVisibility(View.VISIBLE);
                     description.setText(getContext().getResources().getString(R.string.refreshing));
                     break;
                 case STATUS_REFRESH_FINISHED:
-                    arrow.setVisibility(View.GONE);
-                    progressBar.setVisibility(View.GONE);
+                    arrow.setVisibility(View.INVISIBLE);
+                    progressBar.setVisibility(View.INVISIBLE);
                     description.setText(getContext().getResources().getString(R.string.refresh_finished));
                     break;
             }

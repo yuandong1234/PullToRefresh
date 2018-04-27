@@ -5,15 +5,32 @@
     android:layout_height="match_parent"
     tools:context="com.yuong.view.MainActivity">
 
-    <com.yuong.pulltorefresh.library.RefreshLayout
-        android:id="@+id/refreshLayout"
+    <Button
+        android:id="@+id/bt_listView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:text="嵌套 ListView" />
 
-        <ListView
-            android:id="@+id/listView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </com.yuong.pulltorefresh.library.RefreshLayout>
+    <Button
+        android:id="@+id/bt_scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="嵌套 ScrollView"
+        android:layout_below="@+id/bt_listView"/>
+
+    <Button
+        android:id="@+id/bt_recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="嵌套 RecyclerView"
+        android:layout_below="@+id/bt_scrollView"/>
+
+    <Button
+        android:id="@+id/bt_View"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="嵌套 一般的View"
+        android:layout_below="@+id/bt_recyclerView"/>
+
 
 </RelativeLayout>

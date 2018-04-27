@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 /**
+ * 简单的自定义ViewGroup的使用
  * Created by yuandong on 2018/4/23.
  */
 

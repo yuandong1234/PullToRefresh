@@ -7,11 +7,12 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Scroller;
 
+import com.yuong.pulltorefresh.library.footer.ClassicLoadingFooter;
 import com.yuong.pulltorefresh.library.header.ClassicLoadingHeader;
 import com.yuong.pulltorefresh.library.header.LoadingLayout;
+import com.yuong.pulltorefresh.library.intercept.ViewDispatchEvent;
 import com.yuong.pulltorefresh.library.listener.RefreshListener;
 
 /**
@@ -30,10 +31,25 @@ public class RefreshLayout extends ViewGroup {
      */
     private int hideHeaderHeight;
 
+    /**
+     * footer view
+     */
+    private LoadingLayout footer;
+
+    /**
+     * footer height
+     */
+    private int hideFooterHeight;
+    /**
+     * current refresh state
+     */
+    private State currentState;
 
     private RefreshListener refreshListener;
 
     private Scroller mScroller;
+    private static final int SCROLL_SPEED = 500;
+
     private boolean loadOnce;
 
     public RefreshLayout(Context context) {
@@ -52,12 +68,18 @@ public class RefreshLayout extends ViewGroup {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+        Log.e(TAG, "onFinishInflate()...");
         addHeader();
+        addFooter();
     }
 
     //添加头部
     private void addHeader() {
         addView(getHeader());
+    }
+
+    private void addFooter() {
+        addView(getFooter());
     }
 
     @Override
@@ -85,6 +107,10 @@ public class RefreshLayout extends ViewGroup {
                     hideHeaderHeight = child.getMeasuredHeight();
                     Log.e(TAG, "hideHeaderHeight : " + hideHeaderHeight);
                     child.layout(0, -hideHeaderHeight, child.getMeasuredWidth(), 0);
+                } else if (child == footer) {
+                    hideFooterHeight = child.getMeasuredHeight();
+                    Log.e(TAG, "hideFooterHeight : " + hideFooterHeight);
+                    child.layout(0, height, child.getMeasuredWidth(), height + hideFooterHeight);
                 } else {
                     child.layout(0, height, child.getMeasuredWidth(), height + child.getMeasuredHeight());
                     height += child.getMeasuredHeight();
@@ -92,7 +118,6 @@ public class RefreshLayout extends ViewGroup {
             }
             loadOnce = true;
         }
-
     }
 
     @Override
@@ -102,6 +127,14 @@ public class RefreshLayout extends ViewGroup {
             scrollTo(0, mScroller.getCurrY());
         }
         postInvalidate();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (currentState == State.STATUS_REFRESHING||currentState==State.STATUS_LOADING) {
+            return false;
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     private int mLastMoveY;
@@ -117,19 +150,19 @@ public class RefreshLayout extends ViewGroup {
             case MotionEvent.ACTION_DOWN:
                 // 记录下本次系列触摸事件的起始点Y坐标
                 mLastMoveY = currentY;
-
                 mLastYIntercept = currentY;
                 // 不拦截ACTION_DOWN，因为当ACTION_DOWN被拦截，后续所有触摸事件都会被拦截
                 intercept = false;
                 break;
             case MotionEvent.ACTION_MOVE:
                 Log.e(TAG, "mLastYIntercept " + mLastYIntercept + " currentX :" + currentY);
-                if (currentY > mLastYIntercept) { // 下滑操作
+                View child = getChildAt(0);
+                if (currentY > mLastYIntercept) { // 下拉操作
                     // 获取最顶部的子视图
-                    View child = getChildAt(0);
-                    if (child instanceof AdapterView) {
-                        intercept = avPullDownIntercept(child);
-                    }
+                    intercept = ViewDispatchEvent.pullDown(child);
+                } else {
+                    // 上拉操作
+                    intercept = ViewDispatchEvent.pullUp(child,getMeasuredHeight());
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -137,18 +170,6 @@ public class RefreshLayout extends ViewGroup {
                 break;
         }
         mLastYIntercept = currentY;
-        return intercept;
-    }
-
-    private boolean avPullDownIntercept(View child) {
-        boolean intercept = true;
-        AdapterView adapterChild = (AdapterView) child;
-        // 判断AbsListView是否已经到达内容最顶部
-        if (adapterChild.getFirstVisiblePosition() != 0
-                || adapterChild.getChildAt(0).getTop() != 0) {
-            // 如果没有达到最顶端，则仍然将事件下放
-            intercept = false;
-        }
         return intercept;
     }
 
@@ -162,30 +183,55 @@ public class RefreshLayout extends ViewGroup {
                 break;
             case MotionEvent.ACTION_MOVE:
                 int distance = mLastMoveY - y;
-//                Log.e(TAG, "distance :" + distance);
-//                Log.e(TAG, "getScrollY() : " + getScrollY());
+                Log.e(TAG, "distance :" + distance + "  getScrollY() :" + getScrollY());
+                if (getScrollY() < 0) {
+                    if (getScrollY() <= -hideHeaderHeight) {
+                        //释放立即刷新
+                        currentState = State.STATUS_RELEASE_TO_REFRESH;
+                        header.setState(State.STATUS_RELEASE_TO_REFRESH);
+                    } else {
+                        //下拉可以刷新
+                        currentState = State.STATUS_PULL_TO_REFRESH;
+                        header.setState(State.STATUS_PULL_TO_REFRESH);
+                    }
+                }
 
-                if (distance > 0 && getScrollY() == 0) return false;
-
-                if (getScrollY() <= -hideHeaderHeight) {
-                    //释放立即刷新
-                    header.setState(State.STATUS_RELEASE_TO_REFRESH);
-                } else {
-                    //下拉可以刷新
-                    header.setState(State.STATUS_PULL_TO_REFRESH);
+                if (getScrollY() > 0) {
+                    if (getScrollY() >= hideFooterHeight) {
+                        currentState = State.STATUS_RELEASE_TO_LOADING;
+                        footer.setState(State.STATUS_RELEASE_TO_LOADING);
+                    } else {
+                        currentState = State.STATUS_PULL_TO_LOADING;
+                        footer.setState(State.STATUS_PULL_TO_LOADING);
+                    }
                 }
                 scrollBy(0, distance);
                 break;
             case MotionEvent.ACTION_UP:
                 if (getScrollY() <= -hideHeaderHeight) {
                     //正在刷新
-                    mScroller.startScroll(0, getScrollY(), 0, -(getScrollY() + hideHeaderHeight));
+                    mScroller.startScroll(0, getScrollY(), 0, -(getScrollY() + hideHeaderHeight), SCROLL_SPEED);
                     header.setState(State.STATUS_REFRESHING);
-                    if (refreshListener != null) {
-                        refreshListener.onRefresh();
+                    if (currentState != State.STATUS_REFRESHING) {
+                        currentState = State.STATUS_REFRESHING;
+                        if (refreshListener != null) {
+                            Log.e(TAG, "The view is refreshing...");
+                            refreshListener.onRefresh();
+                        }
+                    }
+                } else if (getScrollY() >= hideFooterHeight) {
+                    //正在加载
+                    mScroller.startScroll(0, getScrollY(), 0, -(getScrollY() - hideFooterHeight), SCROLL_SPEED);
+                    footer.setState(State.STATUS_LOADING);
+                    if (currentState != State.STATUS_LOADING) {
+                        currentState = State.STATUS_LOADING;
+                        if (refreshListener != null) {
+                            Log.e(TAG, "The view is loading more...");
+                            refreshListener.onLoadMore();
+                        }
                     }
                 } else {
-                    mScroller.startScroll(0, getScrollY(), 0, -getScrollY());
+                    mScroller.startScroll(0, getScrollY(), 0, -getScrollY(), SCROLL_SPEED);
                 }
                 break;
         }
@@ -195,17 +241,32 @@ public class RefreshLayout extends ViewGroup {
 
     public void onRefreshComplete() {
         //刷新完毕
+        Log.e(TAG, "The view refresh complete");
+        currentState = State.STATUS_REFRESH_FINISHED;
         header.setState(State.STATUS_REFRESH_FINISHED);
         postDelayed(new Runnable() {
             @Override
             public void run() {
-                mScroller.startScroll(0, getScrollY(), 0, -getScrollY());
+                mScroller.startScroll(0, getScrollY(), 0, -getScrollY(), SCROLL_SPEED);
+            }
+        }, 500);
+    }
+
+    public void onLoadMoreComplete() {
+        //加载完毕
+        Log.e(TAG, "The view load more  complete");
+        currentState = State.STATUS_REFRESH_FINISHED;
+        footer.setState(State.STATUS_REFRESH_FINISHED);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mScroller.startScroll(0, getScrollY(), 0, -getScrollY(), SCROLL_SPEED);
             }
         }, 500);
     }
 
     /**
-     * 设置头部
+     * set the Header
      *
      * @param header
      */
@@ -214,7 +275,16 @@ public class RefreshLayout extends ViewGroup {
     }
 
     /**
-     * 获得头部
+     * set the Footer
+     *
+     * @param footer
+     */
+    public void setFooter(LoadingLayout footer) {
+        this.footer = footer;
+    }
+
+    /**
+     * get the Header
      *
      * @return
      */
@@ -223,6 +293,18 @@ public class RefreshLayout extends ViewGroup {
             header = new ClassicLoadingHeader(getContext());
         }
         return header;
+    }
+
+    /**
+     * get the Footer
+     *
+     * @return
+     */
+    public LoadingLayout getFooter() {
+        if (footer == null) {
+            footer = new ClassicLoadingFooter(getContext());
+        }
+        return footer;
     }
 
     /**
