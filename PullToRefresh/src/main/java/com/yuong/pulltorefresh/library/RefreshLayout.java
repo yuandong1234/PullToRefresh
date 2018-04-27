@@ -160,9 +160,11 @@ public class RefreshLayout extends ViewGroup {
                 if (currentY > mLastYIntercept) { // 下拉操作
                     // 获取最顶部的子视图
                     intercept = ViewDispatchEvent.pullDown(child);
-                } else {
+                } else if(currentY<mLastYIntercept){
                     // 上拉操作
                     intercept = ViewDispatchEvent.pullUp(child,getMeasuredHeight());
+                }else{
+                   intercept=false;
                 }
                 break;
             case MotionEvent.ACTION_UP:
