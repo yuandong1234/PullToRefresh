@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
@@ -49,8 +50,17 @@ public class RefreshLayout extends ViewGroup {
 
     private Scroller mScroller;
     private static final int SCROLL_SPEED = 500;
+    private int mTouchSlop;
 
     private boolean loadOnce;
+    /**
+     * enable the view refreshed
+     */
+    private boolean enableRefresh = true;
+    /**
+     * enable the view loaded more
+     */
+    private boolean enableLoadMore = true;
 
     public RefreshLayout(Context context) {
         this(context, null);
@@ -63,6 +73,8 @@ public class RefreshLayout extends ViewGroup {
     public RefreshLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mScroller = new Scroller(context);
+        mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+        Log.e(TAG, "mTouchSlop : " + mTouchSlop);
     }
 
     @Override
@@ -78,6 +90,7 @@ public class RefreshLayout extends ViewGroup {
         addView(getHeader());
     }
 
+    //添加底部
     private void addFooter() {
         addView(getFooter());
     }
@@ -92,11 +105,16 @@ public class RefreshLayout extends ViewGroup {
         }
     }
 
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        Log.e(TAG, "onSizeChanged()...");
+    }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        Log.e(TAG, "onLayout()...");
-        if (changed && !loadOnce) {
+        Log.e(TAG, "onLayout()  : changed " + changed);
+        if (!loadOnce) {
             int height = 0;
             int count = getChildCount();
             View child;
@@ -104,13 +122,21 @@ public class RefreshLayout extends ViewGroup {
             for (int i = 0; i < count; i++) {
                 child = getChildAt(i);
                 if (child == header) {
-                    hideHeaderHeight = child.getMeasuredHeight();
-                    Log.e(TAG, "hideHeaderHeight : " + hideHeaderHeight);
-                    child.layout(0, -hideHeaderHeight, child.getMeasuredWidth(), 0);
+                    if (enableRefresh) {
+                        hideHeaderHeight = child.getMeasuredHeight();
+                        Log.e(TAG, "hideHeaderHeight : " + hideHeaderHeight);
+                        child.layout(0, -hideHeaderHeight, child.getMeasuredWidth(), 0);
+                    } else {
+                        child.layout(0, 0, 0, 0);
+                    }
                 } else if (child == footer) {
-                    hideFooterHeight = child.getMeasuredHeight();
-                    Log.e(TAG, "hideFooterHeight : " + hideFooterHeight);
-                    child.layout(0, height, child.getMeasuredWidth(), height + hideFooterHeight);
+                    if (enableLoadMore) {
+                        hideFooterHeight = child.getMeasuredHeight();
+                        Log.e(TAG, "hideFooterHeight : " + hideFooterHeight);
+                        child.layout(0, height, child.getMeasuredWidth(), height + hideFooterHeight);
+                    } else {
+                        child.layout(0, 0, 0, 0);
+                    }
                 } else {
                     child.layout(0, height, child.getMeasuredWidth(), height + child.getMeasuredHeight());
                     height += child.getMeasuredHeight();
@@ -131,7 +157,7 @@ public class RefreshLayout extends ViewGroup {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (currentState == State.STATUS_REFRESHING||currentState==State.STATUS_LOADING) {
+        if (currentState == State.STATUS_REFRESHING || currentState == State.STATUS_LOADING) {
             return false;
         }
         return super.dispatchTouchEvent(ev);
@@ -157,15 +183,18 @@ public class RefreshLayout extends ViewGroup {
             case MotionEvent.ACTION_MOVE:
                 Log.e(TAG, "mLastYIntercept " + mLastYIntercept + " currentX :" + currentY);
                 View child = getChildAt(0);
-                if (currentY > mLastYIntercept) { // 下拉操作
+                int distance = currentY - mLastYIntercept;
+                if (distance > 0) {
+                    // 下拉操作
                     // 获取最顶部的子视图
-                    intercept = ViewDispatchEvent.pullDown(child);
-                } else if(currentY<mLastYIntercept){
+                    intercept = ViewDispatchEvent.pullDown(child, mTouchSlop, distance);
+                } else if (distance < 0) {
                     // 上拉操作
-                    intercept = ViewDispatchEvent.pullUp(child,getMeasuredHeight());
-                }else{
-                   intercept=false;
+                    intercept = ViewDispatchEvent.pullUp(child, mTouchSlop,distance,getMeasuredHeight());
+                } else {
+                    intercept = false;
                 }
+                Log.e(TAG, "intercept " + intercept);
                 break;
             case MotionEvent.ACTION_UP:
                 intercept = false;
@@ -210,7 +239,7 @@ public class RefreshLayout extends ViewGroup {
                 scrollBy(0, distance);
                 break;
             case MotionEvent.ACTION_UP:
-                if (getScrollY() <= -hideHeaderHeight) {
+                if (getScrollY() <= -hideHeaderHeight && enableRefresh) {
                     //正在刷新
                     mScroller.startScroll(0, getScrollY(), 0, -(getScrollY() + hideHeaderHeight), SCROLL_SPEED);
                     header.setState(State.STATUS_REFRESHING);
@@ -221,7 +250,7 @@ public class RefreshLayout extends ViewGroup {
                             refreshListener.onRefresh();
                         }
                     }
-                } else if (getScrollY() >= hideFooterHeight) {
+                } else if (getScrollY() >= hideFooterHeight && enableLoadMore) {
                     //正在加载
                     mScroller.startScroll(0, getScrollY(), 0, -(getScrollY() - hideFooterHeight), SCROLL_SPEED);
                     footer.setState(State.STATUS_LOADING);
@@ -307,6 +336,20 @@ public class RefreshLayout extends ViewGroup {
             footer = new ClassicLoadingFooter(getContext());
         }
         return footer;
+    }
+
+    public void setEnableRefresh(boolean enableRefresh) {
+        Log.e(TAG, "unable to pull down to refresh ");
+        loadOnce = false;
+        this.enableRefresh = enableRefresh;
+        requestLayout();
+    }
+
+    public void setEnableLoadMore(boolean enableLoadMore) {
+        Log.e(TAG, "unable to pull up to load more ");
+        loadOnce = false;
+        this.enableLoadMore = enableLoadMore;
+        requestLayout();
     }
 
     /**

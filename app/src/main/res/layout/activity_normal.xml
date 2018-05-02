@@ -10,13 +10,43 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/white"
-            android:gravity="center"
-            android:text="Normal View"
-            android:textSize="25sp" />
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/bt_unable_pull_up"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:text="禁止上拉加载" />
+
+            <Button
+                android:id="@+id/bt_able_pull_up"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="允许上拉加载" />
+
+            <Button
+                android:id="@+id/bt_able_pull_down"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="允许下拉刷新" />
+
+            <Button
+                android:id="@+id/bt_unable_pull_down"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="禁止下拉刷新" />
+        </LinearLayout>
+
+        <!--<TextView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="200dp"-->
+            <!--android:textSize="26sp"-->
+            <!--android:gravity="center"-->
+            <!--android:text="Normal View"/>-->
     </com.yuong.pulltorefresh.library.RefreshLayout>
 
 </RelativeLayout>

@@ -3,6 +3,7 @@ package com.yuong.pulltorefresh.library.intercept;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.AdapterView;
 import android.widget.ScrollView;
 
@@ -13,7 +14,7 @@ import android.widget.ScrollView;
 
 public class ViewDispatchEvent {
 
-    public static boolean pullDown(View view) {
+    public static boolean pullDown(View view,int touchSlop,int distance) {
         if (view instanceof AdapterView) {
             return pullDownOnAdapterView(view);
         } else if (view instanceof ScrollView) {
@@ -21,12 +22,14 @@ public class ViewDispatchEvent {
         } else if (view instanceof RecyclerView) {
             return pullDownOnRecyclerView(view);
         } else {
+            if(Math.abs(distance) >=touchSlop){
+               return true;
+            }
             return false;
         }
     }
 
-    public static boolean pullUp(View view, int viewGroupHeight) {
-        Log.e("9999999","viewGroupHeight : "+viewGroupHeight);
+    public static boolean pullUp(View view,int touchSlop,int distance, int viewGroupHeight) {
         if (view instanceof AdapterView) {
             return pullUpOnAdapterView(view, viewGroupHeight);
         } else if (view instanceof ScrollView) {
@@ -34,6 +37,9 @@ public class ViewDispatchEvent {
         } else if (view instanceof RecyclerView) {
             return pullUpOnRecyclerView(view);
         } else {
+            if(Math.abs(distance) >=touchSlop){
+                return true;
+            }
             return false;
         }
     }
